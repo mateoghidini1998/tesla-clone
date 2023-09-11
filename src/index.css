@@ -1,3 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+    font-family: 'Gotham SSm';
+    src: url('../src/assets/fonts/Gotham\ Medium.otf');
+}
+
+body{
+    font-family: 'Gotham SSm', sans-serif;
+}
