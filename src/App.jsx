@@ -1,16 +1,81 @@
+import { useRef, useEffect } from 'react'
 import './App.css'
 import Header from './components/Header'
+import Section from './components/Section';
+import data from './data/media.json'
 
 function App() {
+  const videoRef = useRef();
+  const sectionRefs = useRef([]);
+  const currentSectionIndex = useRef(0);
+
+  const handleVideoLoop = () => {
+    videoRef.current.currentTime = 0;
+    videoRef.current.play();
+  }
+
+  const addToRefs = (el) => {
+    if (el && !sectionRefs.current.includes(el) && el.tagName !== 'VIDEO') {
+      sectionRefs.current.push(el);
+    }
+  };
+
+  useEffect(() => {
+    const handleScroll = (e) => {
+      // Determine scroll direction
+      const deltaY = e.deltaY;
+      if (deltaY < 0) {
+        // Scrolling up
+        if (currentSectionIndex.current > 0) {
+          currentSectionIndex.current--;
+          sectionRefs.current[currentSectionIndex.current].scrollIntoView({
+            behavior: 'smooth',
+            block: 'end', // Scroll to the end of the previous section for a slower effect
+          });
+        }
+      } else if (deltaY > 0) {
+        // Scrolling down
+        if (currentSectionIndex.current < sectionRefs.current.length - 1) {
+          currentSectionIndex.current++;
+          sectionRefs.current[currentSectionIndex.current].scrollIntoView({
+            behavior: 'smooth',
+            block: 'start', // Scroll to the start of the next section for a slower effect
+          });
+        }
+      }
+    };
+
+    window.addEventListener('wheel', handleScroll);
+
+    return () => {
+      window.removeEventListener('wheel', handleScroll);
+    };
+  }, []);
 
   return (
     <>
-    <main className='relative'> 
-      <Header/>
-      <div className="w-full h-full">
-        <video className="w-full max-h-screen object-cover" preload="auto" playsinline="" data-autoplay-desktop="true" data-autoplay-portrait="true" data-autoplay-mobile="true" data-play-on-hover="false" muted="" loop="" poster="https://digitalassets.tesla.com/tesla-contents/image/upload/f_auto,q_auto/Model-3-Main-Hero-Desktop-Poster-NA.jpg" data-poster-desktop="https://digitalassets.tesla.com/tesla-contents/image/upload/f_auto,q_auto/Model-3-Main-Hero-Desktop-Poster-NA.jpg" data-poster-portrait="https://digitalassets.tesla.com/tesla-contents/image/upload/f_auto,q_auto/Model-3-Main-Hero-Desktop-Poster-NA.jpg" data-poster-mobile="https://digitalassets.tesla.com/tesla-contents/image/upload/f_auto,q_auto/Model-3-Main-Hero-Mobile-Poster-NA.jpg	" data-src-desktop="https://digitalassets.tesla.com/tesla-contents/video/upload/Model-3-Main-Hero-Video-Desktop-NA.mp4" data-src-portrait="https://digitalassets.tesla.com/tesla-contents/video/upload/Model-3-Main-Hero-Video-Desktop-NA.mp4" data-src-mobile="https://digitalassets.tesla.com/tesla-contents/video/upload/Model-3-Main-Hero-Video-Mobile-NA.mp4" data-src="https://digitalassets.tesla.com/tesla-contents/video/upload/Model-3-Main-Hero-Video-Desktop-NA.mp4" data-object-fit="true" src="https://digitalassets.tesla.com/tesla-contents/video/upload/Model-3-Main-Hero-Video-Desktop-NA.mp4" data-loaded="true" autoPlay></video>
-      </div>
-    </main>
+      <main className='relative h-screen'> 
+        <Header />
+        {data.sections.map((section, index) => (
+          <Section
+          ref={(el) => addToRefs(el)}
+          key={index}
+          title={section.title}
+          price={section.price}
+          description={section.description}
+          mediaType={section.mediaType}
+          mediaUrl={section.mediaUrl}
+          priceDescription={section.priceDescription}
+          link={section.link}
+          handleVideoLoop={handleVideoLoop}
+          videoRef={videoRef}
+          textColor={section.textColor}
+          muted
+          />
+        ))}
+         
+      </main>
+
     </>
   )
 }
